@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtus Wealth Advisors - Tax Calculator</title>
+    <title>Virtus Wealth Advisors - Tax Calculator (Excel Accurate)</title>
     <style>
         :root {
             --navy: #1a237e;
             --navy-light: #283593;
+            --navy-dark: #0d1642;
             --gold: #c9a227;
             --gold-light: #e0c56e;
             --gold-dark: #9e7e1e;
@@ -23,8 +24,9 @@
             --gray-800: #2f363d;
             --gray-900: #24292e;
             --green: #28a745;
-            --green-light: #d4edda;
-            --blue-highlight: #dbeafe;
+            --red: #dc3545;
+            --blue: #0366d6;
+            --blue-light: #dbeafe;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -35,7 +37,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: var(--white);
             border-radius: 4px;
@@ -57,146 +59,267 @@
         .logo-text { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
         .tagline { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--gold-light); margin-top: 4px; }
         .header h1 { font-size: 20px; font-weight: 500; margin-top: 16px; color: var(--white); }
-        .excel-grid { padding: 24px 32px; }
-        .input-section {
-            background: var(--gray-50); border: 1px solid var(--gray-300);
-            border-radius: 4px; margin-bottom: 24px; overflow: hidden;
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
         }
-        .section-header {
-            background: var(--navy); color: var(--white); padding: 10px 16px;
-            font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        
+        .section {
+            padding: 24px;
+            border-right: 1px solid var(--gray-300);
+            border-bottom: 1px solid var(--gray-300);
         }
-        .input-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 0; border-top: 1px solid var(--gray-300);
+        .section:last-child { border-right: none; }
+        
+        .section-title {
+            background: var(--navy);
+            color: var(--white);
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: -24px -24px 20px -24px;
+            border-bottom: 2px solid var(--gold);
         }
-        .input-cell { display: flex; border-bottom: 1px solid var(--gray-200); border-right: 1px solid var(--gray-200); }
-        .input-cell:last-child { border-right: none; }
-        .cell-label {
-            background: var(--gray-100); padding: 12px 16px; font-size: 13px; font-weight: 500;
-            color: var(--gray-700); border-right: 1px solid var(--gray-200); min-width: 140px;
-            display: flex; align-items: center;
+        
+        .subsection-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+            margin: 20px 0 12px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--gray-300);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .cell-input { flex: 1; padding: 0; }
-        .cell-input input, .cell-input select {
-            width: 100%; height: 100%; padding: 12px 16px; border: none; font-size: 14px;
-            font-family: inherit; background: var(--white); color: var(--gray-900);
-            outline: none; transition: background-color 0.15s;
+        
+        .input-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
         }
-        .cell-input input:focus, .cell-input select:focus { background: var(--blue-highlight); }
-        .cell-input input[type="number"] {
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace; font-size: 15px; text-align: right;
+        
+        .input-label {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-700);
         }
+        
+        .input-field {
+            width: 140px;
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            text-align: right;
+            background: var(--white);
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+        
+        .input-field.calc {
+            background: var(--gray-100);
+            font-weight: 600;
+            color: var(--navy);
+        }
+        
+        .input-field.highlight {
+            background: #fff3cd;
+            border-color: var(--gold);
+        }
+        
+        .input-suffix {
+            width: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .checkbox-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checkbox-row label {
+            font-size: 13px;
+            color: var(--gray-700);
+            cursor: pointer;
+        }
+        
         .results-section {
-            background: var(--gray-50); border: 1px solid var(--gray-300);
-            border-radius: 4px; margin-bottom: 24px; overflow: hidden;
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+            color: var(--white);
+            padding: 32px;
         }
-        .results-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
-        .result-cell {
-            padding: 20px; text-align: center;
-            border-right: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200);
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
         }
-        .result-cell:last-child { border-right: none; }
+        
+        .result-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
         .result-label {
-            font-size: 12px; font-weight: 600; color: var(--gray-500);
-            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold-light);
+            margin-bottom: 8px;
         }
+        
         .result-value {
-            font-size: 24px; font-weight: 600; color: var(--navy);
+            font-size: 28px;
+            font-weight: 600;
             font-family: 'SF Mono', Monaco, 'Courier New', monospace;
         }
-        .result-value.tax-due { color: var(--gold-dark); }
-        .result-value.effective-rate { color: var(--green); }
-        .solver-section {
-            background: var(--gray-50); border: 1px solid var(--gold);
-            border-radius: 4px; margin-bottom: 24px; overflow: hidden;
+        
+        .result-value.gold { color: var(--gold); }
+        .result-value.green { color: #4ade80; }
+        
+        .ssa-worksheet {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
         }
-        .solver-section .section-header { background: var(--gold); color: var(--navy); }
-        .solver-result-box {
-            padding: 20px; background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-            color: var(--white); display: flex; justify-content: space-around;
-            align-items: center; flex-wrap: wrap; gap: 20px;
+        
+        .ssa-worksheet-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gray-300);
         }
-        .solver-metric { text-align: center; }
-        .solver-metric-label {
-            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--gold-light); margin-bottom: 4px;
+        
+        .ssa-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid var(--gray-200);
         }
-        .solver-metric-value {
-            font-size: 22px; font-weight: 600;
+        
+        .ssa-row:last-child { border-bottom: none; }
+        
+        .ssa-label { color: var(--gray-600); }
+        .ssa-value {
             font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-weight: 500;
+            color: var(--gray-900);
         }
-        .solver-metric-value.gold { color: var(--gold); }
-        .bracket-section {
-            background: var(--white); border: 1px solid var(--gray-300);
-            border-radius: 4px; overflow: hidden;
+        
+        .ssa-value.highlight {
+            color: var(--navy);
+            font-weight: 600;
         }
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        thead { background: var(--navy); color: var(--white); }
-        th {
-            padding: 14px 16px; text-align: left; font-weight: 600; font-size: 12px;
-            text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--gold);
+        
+        .config-section {
+            background: var(--gray-50);
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--gray-300);
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
         }
-        th.numeric { text-align: right; }
-        td { padding: 14px 16px; border-bottom: 1px solid var(--gray-200); }
-        td.numeric {
-            text-align: right; font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+        
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        tbody tr { transition: background-color 0.15s; }
-        tbody tr:hover { background: var(--gray-50); }
-        tbody tr.active-bracket {
-            background: var(--blue-highlight); border-left: 4px solid var(--gold);
+        
+        .config-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
         }
-        tbody tr.active-bracket td { font-weight: 600; color: var(--navy); }
-        .rate-cell { font-weight: 600; color: var(--navy); }
-        .tax-in-bracket { color: var(--gold-dark); font-weight: 600; }
-        .cumulative-tax { color: var(--gray-600); font-size: 12px; }
-        .bracket-progress {
-            margin-top: 24px; padding: 20px; background: var(--gray-50);
-            border-top: 1px solid var(--gray-200);
+        
+        .config-select {
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 14px;
+            background: var(--white);
+            min-width: 180px;
         }
-        .progress-label { font-size: 12px; font-weight: 600; color: var(--gray-600); margin-bottom: 12px; }
-        .progress-bar-container {
-            height: 32px; background: var(--gray-200); border-radius: 4px;
-            overflow: hidden; display: flex; position: relative;
+        
+        .divider {
+            height: 1px;
+            background: var(--gray-300);
+            margin: 16px 0;
         }
-        .progress-segment {
-            height: 100%; display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: 600; color: var(--white);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3); transition: all 0.3s ease;
+        
+        .total-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            margin-top: 8px;
+            border-top: 2px solid var(--navy);
         }
-        .progress-segment.active { box-shadow: inset 0 0 0 2px var(--gold); }
-        .progress-segment.filled { background: var(--navy); }
-        .progress-segment.partial {
-            background: linear-gradient(90deg, var(--navy) var(--percent, 0%), var(--gray-300) var(--percent, 0%));
+        
+        .total-label {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy);
+            text-transform: uppercase;
         }
-        .progress-segment.empty { background: var(--gray-300); }
-        .income-marker {
-            position: absolute; top: -8px; width: 2px; height: 48px;
-            background: var(--gold); transform: translateX(-50%); z-index: 10;
+        
+        .total-value {
+            width: 140px;
+            text-align: right;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--navy);
         }
-        .income-marker::after {
-            content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-            border-left: 6px solid transparent; border-right: 6px solid transparent;
-            border-top: 8px solid var(--gold);
+        
+        .note {
+            font-size: 11px;
+            color: var(--gray-500);
+            margin-top: 4px;
+            font-style: italic;
         }
-        .income-marker-label {
-            position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
-            font-size: 11px; font-weight: 600; color: var(--navy); background: var(--white);
-            padding: 2px 8px; border-radius: 4px; border: 1px solid var(--gold); white-space: nowrap;
-        }
-        .footer {
-            padding: 16px 32px; background: var(--gray-100);
-            border-top: 1px solid var(--gray-200); font-size: 12px;
-            color: var(--gray-500); text-align: center;
-        }
-        .footer strong { color: var(--navy); }
-        @media (max-width: 768px) {
+
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .section { border-right: none; }
             .results-grid { grid-template-columns: repeat(2, 1fr); }
-            .input-grid { grid-template-columns: 1fr; }
-            .cell-label { min-width: 120px; }
-            .solver-result-box { flex-direction: column; }
+        }
+        
+        @media (max-width: 640px) {
+            .results-grid { grid-template-columns: 1fr; }
+            .config-section { flex-direction: column; gap: 16px; }
         }
     </style>
 </head>
@@ -207,405 +330,508 @@
                 <div class="logo-icon">V</div>
                 <div>
                     <div class="logo-text">Virtus Wealth Advisors</div>
-                    <div class="tagline">Tax Planning Tools</div>
+                    <div class="tagline">Excel-Accurate Tax Calculator</div>
                 </div>
             </div>
-            <h1>📊 Federal Income Tax Calculator</h1>
+            <h1>📊 Comprehensive Tax Calculator with Social Security Worksheet</h1>
         </div>
-        <div class="excel-grid">
-            <div class="input-section">
-                <div class="section-header">Inputs</div>
-                <div class="input-grid">
-                    <div class="input-cell">
-                        <div class="cell-label">Tax Year</div>
-                        <div class="cell-input">
-                            <select id="yearSelect">
-                                <option value="2024">2024</option>
-                                <option value="2025" selected>2025</option>
-                                <option value="2026">2026 (Projected)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-cell">
-                        <div class="cell-label">Filing Status</div>
-                        <div class="cell-input">
-                            <select id="filingStatusSelect">
-                                <option value="single" selected>Single</option>
-                                <option value="married_joint">Married Filing Jointly</option>
-                                <option value="married_separate">Married Filing Separately</option>
-                                <option value="head_household">Head of Household</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-cell">
-                        <div class="cell-label">Taxable Income</div>
-                        <div class="cell-input">
-                            <input type="number" id="incomeInput" placeholder="0" min="0" step="100">
-                        </div>
-                    </div>
-                </div>
+        
+        <div class="config-section">
+            <div class="config-group">
+                <label class="config-label">Tax Year:</label>
+                <select class="config-select" id="yearSelect">
+                    <option value="2025" selected>2025</option>
+                </select>
             </div>
-            <div class="results-section">
-                <div class="section-header">Results Summary</div>
-                <div class="results-grid">
-                    <div class="result-cell">
-                        <div class="result-label">Taxable Income</div>
-                        <div class="result-value" id="summaryIncome">$0</div>
-                    </div>
-                    <div class="result-cell">
-                        <div class="result-label">Total Tax Due</div>
-                        <div class="result-value tax-due" id="summaryTax">$0</div>
-                    </div>
-                    <div class="result-cell">
-                        <div class="result-label">Effective Tax Rate</div>
-                        <div class="result-value effective-rate" id="summaryRate">0.0%</div>
-                    </div>
-                    <div class="result-cell">
-                        <div class="result-label">Current Bracket</div>
-                        <div class="result-value" id="summaryBracket">-</div>
-                    </div>
-                </div>
+            <div class="config-group">
+                <label class="config-label">Filing Status:</label>
+                <select class="config-select" id="filingStatusSelect">
+                    <option value="single">Single</option>
+                    <option value="married_joint" selected>Married Filing Jointly</option>
+                    <option value="married_separate">Married Filing Separately</option>
+                    <option value="head_household">Head of Household</option>
+                </select>
             </div>
-            <div class="solver-section">
-                <div class="section-header">🎯 Bracket Solver - Maximize Your Tax Bracket</div>
-                <div class="input-grid">
-                    <div class="input-cell">
-                        <div class="cell-label">Target Bracket</div>
-                        <div class="cell-input">
-                            <select id="solverBracketSelect">
-                                <option value="10">10% Bracket</option>
-                                <option value="12">12% Bracket</option>
-                                <option value="22">22% Bracket</option>
-                                <option value="24">24% Bracket</option>
-                                <option value="32">32% Bracket</option>
-                                <option value="35">35% Bracket</option>
-                                <option value="37">37% Bracket</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="solver-result-box" id="solverResults">
-                    <div class="solver-metric">
-                        <div class="solver-metric-label">Income to Max Bracket</div>
-                        <div class="solver-metric-value gold" id="solverIncome">$0</div>
-                    </div>
-                    <div class="solver-metric">
-                        <div class="solver-metric-label">Tax at Max</div>
-                        <div class="solver-metric-value" id="solverTax">$0</div>
-                    </div>
-                    <div class="solver-metric">
-                        <div class="solver-metric-label">Room Remaining</div>
-                        <div class="solver-metric-value" id="solverRoom">$0</div>
-                    </div>
-                    <div class="solver-metric">
-                        <div class="solver-metric-label">Marginal Rate</div>
-                        <div class="solver-metric-value gold" id="solverRate">0%</div>
-                    </div>
-                </div>
+            <div class="config-group">
+                <label class="config-label">Age 65+:</label>
+                <input type="checkbox" id="age65Check">
             </div>
-            <div class="bracket-section">
-                <div class="section-header" style="background: var(--navy-light);">Tax Bracket Breakdown</div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tax Rate</th>
-                                <th>Income Range (From)</th>
-                                <th>Income Range (To)</th>
-                                <th class="numeric">Bracket Width</th>
-                                <th class="numeric">Tax in Bracket</th>
-                                <th class="numeric">Cumulative Tax</th>
-                                <th class="numeric">Your Tax</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bracketTableBody"></tbody>
-                    </table>
-                </div>
-                <div class="bracket-progress">
-                    <div class="progress-label">Your Income Position Across Tax Brackets</div>
-                    <div class="progress-bar-container" id="progressBar"></div>
-                </div>
+            <div class="config-group">
+                <label class="config-label">Blind:</label>
+                <input type="checkbox" id="blindCheck">
             </div>
         </div>
-        <div class="footer">
-            <strong>Virtus Wealth Advisors</strong> — Tax calculator for educational purposes. 
-            Consult a tax professional for advice specific to your situation.<br>
-            Tax year data based on IRS federal income tax brackets.
+        
+        <div class="main-grid">
+            <!-- LEFT COLUMN: Investment Income & Mortgage -->
+            <div class="section">
+                <div class="section-title">Investment Portfolio & Mortgage</div>
+                
+                <div class="subsection-title">Portfolio Income</div>
+                <div class="input-row">
+                    <label class="input-label">Portfolio Value</label>
+                    <input type="number" class="input-field" id="portfolioValue" placeholder="0" min="0" step="1000">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Yield (%)</label>
+                    <input type="number" class="input-field" id="portfolioYield" placeholder="0" min="0" max="100" step="0.01">
+                    <span class="input-suffix">%</span>
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Portfolio Income</label>
+                    <input type="text" class="input-field calc" id="portfolioIncome" readonly value="$0">
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="subsection-title">Mortgage Details</div>
+                <div class="input-row">
+                    <label class="input-label">Principal</label>
+                    <input type="number" class="input-field" id="mortgagePrincipal" placeholder="0" min="0" step="1000">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Interest Rate</label>
+                    <input type="number" class="input-field" id="mortgageRate" placeholder="0" min="0" max="100" step="0.01">
+                    <span class="input-suffix">%</span>
+                </div>
+                <div class="input-row">
+                    <label class="input-label">P&I / Month</label>
+                    <input type="text" class="input-field calc" id="mortgagePayment" readonly value="$0">
+                </div>
+            </div>
+            
+            <!-- RIGHT COLUMN: Income Sources -->
+            <div class="section">
+                <div class="section-title">Income Sources (All feed into Gross Income)</div>
+                
+                <div class="input-row">
+                    <label class="input-label">Social Security Benefits</label>
+                    <input type="number" class="input-field highlight" id="socialSecurity" placeholder="0" min="0" step="100">
+                </div>
+                
+                <div class="ssa-worksheet" id="ssaWorksheet">
+                    <div class="ssa-worksheet-title">Social Security Taxability Worksheet</div>
+                    <div class="ssa-row">
+                        <span class="ssa-label">50% of Social Security</span>
+                        <span class="ssa-value" id="ssaHalf">$0</span>
+                    </div>
+                    <div class="ssa-row">
+                        <span class="ssa-label">Other Income + Tax-Exempt</span>
+                        <span class="ssa-value" id="ssaOtherIncome">$0</span>
+                    </div>
+                    <div class="ssa-row">
+                        <span class="ssa-label">Combined Income (Provisional)</span>
+                        <span class="ssa-value highlight" id="ssaProvisional">$0</span>
+                    </div>
+                    <div class="ssa-row">
+                        <span class="ssa-label">Base Amount</span>
+                        <span class="ssa-value" id="ssaBaseAmount">$32,000</span>
+                    </div>
+                    <div class="ssa-row">
+                        <span class="ssa-label">Amount Over Base</span>
+                        <span class="ssa-value" id="ssaOverBase">$0</span>
+                    </div>
+                    <div class="ssa-row">
+                        <span class="ssa-label">Taxable Social Security</span>
+                        <span class="ssa-value highlight" id="ssaTaxable" style="color: var(--gold-dark); font-weight: 700;">$0</span>
+                    </div>
+                    <div class="note">Note: SSA taxability uses IRS worksheet logic (50% or 85% rules)</div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="input-row">
+                    <label class="input-label">Wages</label>
+                    <input type="number" class="input-field" id="wages" placeholder="0" min="0" step="100">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Taxable Interest</label>
+                    <input type="number" class="input-field" id="taxableInterest" placeholder="0" min="0" step="100">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Taxable Dividends</label>
+                    <input type="number" class="input-field" id="taxableDividends" placeholder="0" min="0" step="100">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">IRA Distributions</label>
+                    <input type="number" class="input-field" id="iraDistributions" placeholder="0" min="0" step="100">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Pension</label>
+                    <input type="number" class="input-field" id="pension" placeholder="0" min="0" step="100">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Roth Conversions</label>
+                    <input type="number" class="input-field" id="rothConversions" placeholder="0" min="0" step="100">
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Annuity Surrenders</label>
+                    <input type="number" class="input-field" id="annuitySurrenders" placeholder="0" min="0" step="100">
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="subsection-title">For SSA Calculation Only</div>
+                <div class="input-row">
+                    <label class="input-label">Tax-Free Interest</label>
+                    <input type="number" class="input-field" id="taxFreeInterest" placeholder="0" min="0" step="100">
+                    <div class="note">Included in provisional income but not taxable</div>
+                </div>
+                <div class="input-row">
+                    <label class="input-label">Capital Gains</label>
+                    <input type="number" class="input-field" id="capitalGains" placeholder="0" min="0" step="100">
+                    <div class="note">Included in provisional income but taxed separately</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RESULTS SECTION -->
+        <div class="results-section">
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-label">Gross Income</div>
+                    <div class="result-value" id="grossIncome">$0</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Standard Deduction</div>
+                    <div class="result-value" id="standardDeduction">$30,000</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Taxable Income</div>
+                    <div class="result-value gold" id="taxableIncome">$0</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Tax Liability</div>
+                    <div class="result-value" id="taxLiability">$0</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Effective Tax Rate</div>
+                    <div class="result-value green" id="effectiveRate">0.0%</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Marginal Tax Rate</div>
+                    <div class="result-value gold" id="marginalRate">0%</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Total Taxable SSA</div>
+                    <div class="result-value" id="totalTaxableSSA">$0</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Portfolio Income</div>
+                    <div class="result-value" id="displayPortfolioIncome">$0</div>
+                </div>
+            </div>
         </div>
     </div>
+    
     <script>
-        const taxData = {
-            2024: {
-                single: [
-                    { rate: 0.10, from: 0, to: 11600 },
-                    { rate: 0.12, from: 11600, to: 47150 },
-                    { rate: 0.22, from: 47150, to: 100525 },
-                    { rate: 0.24, from: 100525, to: 191950 },
-                    { rate: 0.32, from: 191950, to: 243725 },
-                    { rate: 0.35, from: 243725, to: 609350 },
-                    { rate: 0.37, from: 609350, to: Infinity }
-                ],
-                married_joint: [
-                    { rate: 0.10, from: 0, to: 23200 },
-                    { rate: 0.12, from: 23200, to: 94300 },
-                    { rate: 0.22, from: 94300, to: 201050 },
-                    { rate: 0.24, from: 201050, to: 383900 },
-                    { rate: 0.32, from: 383900, to: 487450 },
-                    { rate: 0.35, from: 487450, to: 731200 },
-                    { rate: 0.37, from: 731200, to: Infinity }
-                ],
-                married_separate: [
-                    { rate: 0.10, from: 0, to: 11600 },
-                    { rate: 0.12, from: 11600, to: 47150 },
-                    { rate: 0.22, from: 47150, to: 100525 },
-                    { rate: 0.24, from: 100525, to: 191950 },
-                    { rate: 0.32, from: 191950, to: 243725 },
-                    { rate: 0.35, from: 243725, to: 365600 },
-                    { rate: 0.37, from: 365600, to: Infinity }
-                ],
-                head_household: [
-                    { rate: 0.10, from: 0, to: 16550 },
-                    { rate: 0.12, from: 16550, to: 63100 },
-                    { rate: 0.22, from: 63100, to: 100500 },
-                    { rate: 0.24, from: 100500, to: 191950 },
-                    { rate: 0.32, from: 191950, to: 243700 },
-                    { rate: 0.35, from: 243700, to: 609350 },
-                    { rate: 0.37, from: 609350, to: Infinity }
-                ]
-            },
-            2025: {
-                single: [
-                    { rate: 0.10, from: 0, to: 11925 },
-                    { rate: 0.12, from: 11925, to: 48475 },
-                    { rate: 0.22, from: 48475, to: 103350 },
-                    { rate: 0.24, from: 103350, to: 197300 },
-                    { rate: 0.32, from: 197300, to: 250525 },
-                    { rate: 0.35, from: 250525, to: 626350 },
-                    { rate: 0.37, from: 626350, to: Infinity }
-                ],
-                married_joint: [
-                    { rate: 0.10, from: 0, to: 23850 },
-                    { rate: 0.12, from: 23850, to: 96950 },
-                    { rate: 0.22, from: 96950, to: 206700 },
-                    { rate: 0.24, from: 206700, to: 394600 },
-                    { rate: 0.32, from: 394600, to: 501050 },
-                    { rate: 0.35, from: 501050, to: 751600 },
-                    { rate: 0.37, from: 751600, to: Infinity }
-                ],
-                married_separate: [
-                    { rate: 0.10, from: 0, to: 11925 },
-                    { rate: 0.12, from: 11925, to: 48475 },
-                    { rate: 0.22, from: 48475, to: 103350 },
-                    { rate: 0.24, from: 103350, to: 197300 },
-                    { rate: 0.32, from: 197300, to: 250525 },
-                    { rate: 0.35, from: 250525, to: 375800 },
-                    { rate: 0.37, from: 375800, to: Infinity }
-                ],
-                head_household: [
-                    { rate: 0.10, from: 0, to: 17000 },
-                    { rate: 0.12, from: 17000, to: 64850 },
-                    { rate: 0.22, from: 64850, to: 103350 },
-                    { rate: 0.24, from: 103350, to: 197300 },
-                    { rate: 0.32, from: 197300, to: 250500 },
-                    { rate: 0.35, from: 250500, to: 626350 },
-                    { rate: 0.37, from: 626350, to: Infinity }
-                ]
-            },
-            2026: {
-                single: [
-                    { rate: 0.10, from: 0, to: 12250 },
-                    { rate: 0.12, from: 12250, to: 49750 },
-                    { rate: 0.22, from: 49750, to: 106050 },
-                    { rate: 0.24, from: 106050, to: 202550 },
-                    { rate: 0.32, from: 202550, to: 257100 },
-                    { rate: 0.35, from: 257100, to: 643050 },
-                    { rate: 0.37, from: 643050, to: Infinity }
-                ],
-                married_joint: [
-                    { rate: 0.10, from: 0, to: 24500 },
-                    { rate: 0.12, from: 24500, to: 99500 },
-                    { rate: 0.22, from: 99500, to: 212100 },
-                    { rate: 0.24, from: 212100, to: 405100 },
-                    { rate: 0.32, from: 405100, to: 514200 },
-                    { rate: 0.35, from: 514200, to: 771750 },
-                    { rate: 0.37, from: 771750, to: Infinity }
-                ],
-                married_separate: [
-                    { rate: 0.10, from: 0, to: 12250 },
-                    { rate: 0.12, from: 12250, to: 49750 },
-                    { rate: 0.22, from: 49750, to: 106050 },
-                    { rate: 0.24, from: 106050, to: 202550 },
-                    { rate: 0.32, from: 202550, to: 257100 },
-                    { rate: 0.35, from: 257100, to: 385875 },
-                    { rate: 0.37, from: 385875, to: Infinity }
-                ],
-                head_household: [
-                    { rate: 0.10, from: 0, to: 17450 },
-                    { rate: 0.12, from: 17450, to: 66500 },
-                    { rate: 0.22, from: 66500, to: 106050 },
-                    { rate: 0.24, from: 106050, to: 202550 },
-                    { rate: 0.32, from: 202550, to: 257000 },
-                    { rate: 0.35, from: 257000, to: 643050 },
-                    { rate: 0.37, from: 643050, to: Infinity }
-                ]
-            }
+        // Standard Deductions for 2025
+        const standardDeductions = {
+            single: { base: 15000, extra: 2000 },
+            married_joint: { base: 30000, extra: 1600 },
+            married_separate: { base: 15000, extra: 1600 },
+            head_household: { base: 22500, extra: 2000 }
         };
-
-        const yearSelect = document.getElementById('yearSelect');
-        const filingStatusSelect = document.getElementById('filingStatusSelect');
-        const incomeInput = document.getElementById('incomeInput');
-        const solverBracketSelect = document.getElementById('solverBracketSelect');
-        const summaryIncome = document.getElementById('summaryIncome');
-        const summaryTax = document.getElementById('summaryTax');
-        const summaryRate = document.getElementById('summaryRate');
-        const summaryBracket = document.getElementById('summaryBracket');
-        const solverIncome = document.getElementById('solverIncome');
-        const solverTax = document.getElementById('solverTax');
-        const solverRoom = document.getElementById('solverRoom');
-        const solverRate = document.getElementById('solverRate');
-        const bracketTableBody = document.getElementById('bracketTableBody');
-        const progressBar = document.getElementById('progressBar');
-
+        
+        // SSA Base amounts
+        const ssaBaseAmounts = {
+            single: 25000,
+            married_joint: 32000,
+            married_separate: 25000,
+            head_household: 25000
+        };
+        
+        // Tax brackets for 2025
+        const taxBrackets = {
+            single: [
+                { rate: 0.10, from: 0, to: 11925 },
+                { rate: 0.12, from: 11925, to: 48475 },
+                { rate: 0.22, from: 48475, to: 103350 },
+                { rate: 0.24, from: 103350, to: 197300 },
+                { rate: 0.32, from: 197300, to: 250525 },
+                { rate: 0.35, from: 250525, to: 626350 },
+                { rate: 0.37, from: 626350, to: Infinity }
+            ],
+            married_joint: [
+                { rate: 0.10, from: 0, to: 23850 },
+                { rate: 0.12, from: 23850, to: 96950 },
+                { rate: 0.22, from: 96950, to: 206700 },
+                { rate: 0.24, from: 206700, to: 394600 },
+                { rate: 0.32, from: 394600, to: 501050 },
+                { rate: 0.35, from: 501050, to: 751600 },
+                { rate: 0.37, from: 751600, to: Infinity }
+            ],
+            married_separate: [
+                { rate: 0.10, from: 0, to: 11925 },
+                { rate: 0.12, from: 11925, to: 48475 },
+                { rate: 0.22, from: 48475, to: 103350 },
+                { rate: 0.24, from: 103350, to: 197300 },
+                { rate: 0.32, from: 197300, to: 250525 },
+                { rate: 0.35, from: 250525, to: 375800 },
+                { rate: 0.37, from: 375800, to: Infinity }
+            ],
+            head_household: [
+                { rate: 0.10, from: 0, to: 17000 },
+                { rate: 0.12, from: 17000, to: 64850 },
+                { rate: 0.22, from: 64850, to: 103350 },
+                { rate: 0.24, from: 103350, to: 197300 },
+                { rate: 0.32, from: 197300, to: 250500 },
+                { rate: 0.35, from: 250500, to: 626350 },
+                { rate: 0.37, from: 626350, to: Infinity }
+            ]
+        };
+        
+        // DOM Elements
+        const inputs = {
+            portfolioValue: document.getElementById('portfolioValue'),
+            portfolioYield: document.getElementById('portfolioYield'),
+            portfolioIncome: document.getElementById('portfolioIncome'),
+            mortgagePrincipal: document.getElementById('mortgagePrincipal'),
+            mortgageRate: document.getElementById('mortgageRate'),
+            mortgagePayment: document.getElementById('mortgagePayment'),
+            socialSecurity: document.getElementById('socialSecurity'),
+            wages: document.getElementById('wages'),
+            taxableInterest: document.getElementById('taxableInterest'),
+            taxableDividends: document.getElementById('taxableDividends'),
+            iraDistributions: document.getElementById('iraDistributions'),
+            pension: document.getElementById('pension'),
+            rothConversions: document.getElementById('rothConversions'),
+            annuitySurrenders: document.getElementById('annuitySurrenders'),
+            taxFreeInterest: document.getElementById('taxFreeInterest'),
+            capitalGains: document.getElementById('capitalGains'),
+            filingStatus: document.getElementById('filingStatusSelect'),
+            age65: document.getElementById('age65Check'),
+            blind: document.getElementById('blindCheck')
+        };
+        
+        const ssaDisplay = {
+            half: document.getElementById('ssaHalf'),
+            otherIncome: document.getElementById('ssaOtherIncome'),
+            provisional: document.getElementById('ssaProvisional'),
+            baseAmount: document.getElementById('ssaBaseAmount'),
+            overBase: document.getElementById('ssaOverBase'),
+            taxable: document.getElementById('ssaTaxable')
+        };
+        
+        const results = {
+            grossIncome: document.getElementById('grossIncome'),
+            standardDeduction: document.getElementById('standardDeduction'),
+            taxableIncome: document.getElementById('taxableIncome'),
+            taxLiability: document.getElementById('taxLiability'),
+            effectiveRate: document.getElementById('effectiveRate'),
+            marginalRate: document.getElementById('marginalRate'),
+            totalTaxableSSA: document.getElementById('totalTaxableSSA'),
+            displayPortfolioIncome: document.getElementById('displayPortfolioIncome')
+        };
+        
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency', currency: 'USD',
                 minimumFractionDigits: 0, maximumFractionDigits: 0
             }).format(amount);
         }
-
-        function formatPercent(rate) {
-            return (rate * 100).toFixed(0) + '%';
+        
+        function getNumber(element) {
+            return parseFloat(element.value) || 0;
         }
-
-        function getBrackets() {
-            return taxData[yearSelect.value][filingStatusSelect.value];
+        
+        // Calculate mortgage payment (P&I)
+        function calculateMortgagePayment(principal, annualRate) {
+            if (principal <= 0 || annualRate <= 0) return 0;
+            const monthlyRate = annualRate / 100 / 12;
+            const numPayments = 360; // 30 years
+            const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+                          (Math.pow(1 + monthlyRate, numPayments) - 1);
+            return payment;
         }
-
-        function calculateTax(income, brackets) {
-            let totalTax = 0;
-            const breakdown = [];
-            let cumulativeTax = 0;
-            for (const bracket of brackets) {
-                const bracketWidth = bracket.to - bracket.from;
-                const taxableInBracket = Math.min(Math.max(0, income - bracket.from), bracketWidth);
-                const taxInBracket = taxableInBracket * bracket.rate;
-                cumulativeTax += taxInBracket;
-                breakdown.push({
-                    rate: bracket.rate, from: bracket.from, to: bracket.to, width: bracketWidth,
-                    taxableAmount: taxableInBracket, taxInBracket: taxInBracket,
-                    cumulativeTax: cumulativeTax,
-                    isActive: income > bracket.from && income <= bracket.to,
-                    isFilled: income >= bracket.to,
-                    isPartial: income > bracket.from && income < bracket.to
-                });
-                totalTax += taxInBracket;
-            }
-            return { totalTax, breakdown };
-        }
-
-        function findCurrentBracket(income, brackets) {
-            for (const bracket of brackets) {
-                if (income <= bracket.to) return bracket;
-            }
-            return brackets[brackets.length - 1];
-        }
-
-        function updateSolver() {
-            const brackets = getBrackets();
-            const income = parseFloat(incomeInput.value) || 0;
-            const targetRate = parseFloat(solverBracketSelect.value) / 100;
-            let targetBracket = null;
-            for (const bracket of brackets) {
-                if (Math.abs(bracket.rate - targetRate) < 0.001) {
-                    targetBracket = bracket;
-                    break;
-                }
-            }
-            if (targetBracket) {
-                const maxIncome = targetBracket.to === Infinity ? brackets[brackets.length - 2].to : targetBracket.to;
-                const taxResult = calculateTax(maxIncome, brackets);
-                const roomRemaining = Math.max(0, maxIncome - income);
-                solverIncome.textContent = formatCurrency(maxIncome);
-                solverTax.textContent = formatCurrency(taxResult.totalTax);
-                solverRoom.textContent = formatCurrency(roomRemaining);
-                solverRate.textContent = formatPercent(targetBracket.rate);
-            }
-        }
-
-        function updateTable() {
-            const brackets = getBrackets();
-            const income = parseFloat(incomeInput.value) || 0;
-            const { totalTax, breakdown } = calculateTax(income, brackets);
-            summaryIncome.textContent = formatCurrency(income);
-            summaryTax.textContent = formatCurrency(totalTax);
-            summaryRate.textContent = income > 0 ? ((totalTax / income) * 100).toFixed(1) + '%' : '0.0%';
-            const currentBracket = findCurrentBracket(income, brackets);
-            summaryBracket.textContent = currentBracket ? formatPercent(currentBracket.rate) : '-';
-            bracketTableBody.innerHTML = '';
-            breakdown.forEach((item) => {
-                const row = document.createElement('tr');
-                if (item.isActive) row.classList.add('active-bracket');
-                const toDisplay = item.to === Infinity ? 'No Limit' : formatCurrency(item.to);
-                const widthDisplay = item.to === Infinity ? '∞' : formatCurrency(item.width);
-                const yourTaxDisplay = item.taxableAmount > 0 ? formatCurrency(item.taxInBracket) : '-';
-                row.innerHTML = `
-                    <td class="rate-cell">${formatPercent(item.rate)}</td>
-                    <td>${formatCurrency(item.from)}</td>
-                    <td>${toDisplay}</td>
-                    <td class="numeric">${widthDisplay}</td>
-                    <td class="numeric tax-in-bracket">${formatCurrency(item.width * item.rate)}</td>
-                    <td class="numeric cumulative-tax">${formatCurrency(item.cumulativeTax)}</td>
-                    <td class="numeric">${yourTaxDisplay}</td>
-                `;
-                bracketTableBody.appendChild(row);
-            });
-            updateProgressBar(breakdown, income);
-            updateSolver();
-        }
-
-        function updateProgressBar(breakdown, income) {
-            progressBar.innerHTML = '';
-            const maxDisplayIncome = breakdown[breakdown.length - 1].to === Infinity 
-                ? breakdown[breakdown.length - 2].to * 1.2 
-                : breakdown[breakdown.length - 1].to;
-            breakdown.forEach((item, index) => {
-                const segment = document.createElement('div');
-                segment.className = 'progress-segment';
-                const segmentWidth = ((item.to === Infinity ? maxDisplayIncome - item.from : item.width) / maxDisplayIncome) * 100;
-                segment.style.width = segmentWidth + '%';
-                segment.textContent = formatPercent(item.rate);
-                if (item.isFilled) {
-                    segment.classList.add('filled');
-                } else if (item.isPartial) {
-                    segment.classList.add('partial', 'active');
-                    const percentFilled = ((income - item.from) / item.width) * 100;
-                    segment.style.setProperty('--percent', percentFilled + '%');
+        
+        // Calculate Social Security Taxability using IRS worksheet
+        function calculateSSATaxability(ssBenefits, otherIncome, taxExemptInterest, filingStatus) {
+            // Step 1: Calculate 50% of Social Security
+            const halfSS = ssBenefits * 0.5;
+            
+            // Step 2: Add other income + tax-exempt interest
+            const otherIncomeTotal = otherIncome + taxExemptInterest;
+            
+            // Step 3: Combined income (provisional income)
+            const combinedIncome = halfSS + otherIncomeTotal;
+            
+            // Step 4: Get base amount based on filing status
+            const baseAmount = ssaBaseAmounts[filingStatus];
+            
+            // Step 5: Calculate taxable amount
+            let taxableSS = 0;
+            
+            if (combinedIncome <= baseAmount) {
+                // No SSA is taxable
+                taxableSS = 0;
+            } else {
+                // Calculate excess over base amount
+                const excess = combinedIncome - baseAmount;
+                
+                if (filingStatus === 'married_joint') {
+                    // Married filing joint
+                    const secondThreshold = 44000;
+                    
+                    if (combinedIncome <= secondThreshold) {
+                        // Between $32,000 and $44,000: 50% of excess taxable
+                        taxableSS = Math.min(excess * 0.5, ssBenefits * 0.5);
+                    } else {
+                        // Above $44,000: 85% rule applies
+                        const amountBelowThreshold = secondThreshold - baseAmount;
+                        const amountAboveThreshold = combinedIncome - secondThreshold;
+                        
+                        // 50% of amount between base and second threshold
+                        const taxableAt50 = Math.min(amountBelowThreshold * 0.5, ssBenefits * 0.5);
+                        // 85% of amount above second threshold
+                        const taxableAt85 = amountAboveThreshold * 0.85;
+                        
+                        taxableSS = Math.min(taxableAt50 + taxableAt85, ssBenefits * 0.85);
+                    }
                 } else {
-                    segment.classList.add('empty');
+                    // Single, Head of Household, Married Separate
+                    const secondThreshold = 34000;
+                    
+                    if (combinedIncome <= secondThreshold) {
+                        // Between $25,000 and $34,000: 50% of excess taxable
+                        taxableSS = Math.min(excess * 0.5, ssBenefits * 0.5);
+                    } else {
+                        // Above $34,000: 85% rule applies
+                        const amountBelowThreshold = secondThreshold - baseAmount;
+                        const amountAboveThreshold = combinedIncome - secondThreshold;
+                        
+                        // 50% of amount between base and second threshold
+                        const taxableAt50 = Math.min(amountBelowThreshold * 0.5, ssBenefits * 0.5);
+                        // 85% of amount above second threshold
+                        const taxableAt85 = amountAboveThreshold * 0.85;
+                        
+                        taxableSS = Math.min(taxableAt50 + taxableAt85, ssBenefits * 0.85);
+                    }
                 }
-                progressBar.appendChild(segment);
-            });
-            if (income > 0) {
-                const marker = document.createElement('div');
-                marker.className = 'income-marker';
-                const markerPosition = Math.min((income / maxDisplayIncome) * 100, 100);
-                marker.style.left = markerPosition + '%';
-                const label = document.createElement('div');
-                label.className = 'income-marker-label';
-                label.textContent = formatCurrency(income);
-                marker.appendChild(label);
-                progressBar.appendChild(marker);
             }
+            
+            return {
+                halfSS: halfSS,
+                otherIncome: otherIncomeTotal,
+                combinedIncome: combinedIncome,
+                baseAmount: baseAmount,
+                excess: Math.max(0, combinedIncome - baseAmount),
+                taxableSS: taxableSS
+            };
         }
-
-        yearSelect.addEventListener('change', updateTable);
-        filingStatusSelect.addEventListener('change', updateTable);
-        incomeInput.addEventListener('input', updateTable);
-        solverBracketSelect.addEventListener('change', updateSolver);
-
-
-        // Initialize
-        updateTable();
+        
+        // Calculate standard deduction
+        function calculateStandardDeduction(filingStatus, age65, blind) {
+            const deduction = standardDeductions[filingStatus];
+            let total = deduction.base;
+            if (age65) total += deduction.extra;
+            if (blind) total += deduction.extra;
+            return total;
+        }
+        
+        // Calculate tax from brackets
+        function calculateTax(taxableIncome, filingStatus) {
+            const brackets = taxBrackets[filingStatus];
+            let tax = 0;
+            let marginalRate = 0;
+            
+            for (const bracket of brackets) {
+                if (taxableIncome > bracket.from) {
+                    const taxableAtThisRate = Math.min(taxableIncome, bracket.to) - bracket.from;
+                    tax += taxableAtThisRate * bracket.rate;
+                    marginalRate = bracket.rate;
+                }
+            }
+            
+            return { tax, marginalRate };
+        }
+        
+        // Main calculation function
+        function calculate() {
+            // Get portfolio values
+            const portfolioValue = getNumber(inputs.portfolioValue);
+            const portfolioYield = getNumber(inputs.portfolioYield);
+            const portfolioIncome = portfolioValue * (portfolioYield / 100);
+            inputs.portfolioIncome.value = formatCurrency(portfolioIncome);
+            
+            // Get mortgage values
+            const mortgagePrincipal = getNumber(inputs.mortgagePrincipal);
+            const mortgageRate = getNumber(inputs.mortgageRate);
+            const mortgagePayment = calculateMortgagePayment(mortgagePrincipal, mortgageRate);
+            inputs.mortgagePayment.value = formatCurrency(mortgagePayment);
+            
+            // Get income sources
+            const ssBenefits = getNumber(inputs.socialSecurity);
+            const wages = getNumber(inputs.wages);
+            const taxableInterest = getNumber(inputs.taxableInterest);
+            const taxableDividends = getNumber(inputs.taxableDividends);
+            const iraDistributions = getNumber(inputs.iraDistributions);
+            const pension = getNumber(inputs.pension);
+            const rothConversions = getNumber(inputs.rothConversions);
+            const annuitySurrenders = getNumber(inputs.annuitySurrenders);
+            const taxFreeInterest = getNumber(inputs.taxFreeInterest);
+            const capitalGains = getNumber(inputs.capitalGains);
+            
+            // Get filing status and deductions config
+            const filingStatus = inputs.filingStatus.value;
+            const age65 = inputs.age65.checked;
+            const blind = inputs.blind.checked;
+            
+            // Calculate other income for SSA worksheet
+            // Includes: wages, taxable interest, dividends, IRA, pension, roth conversions, annuity, portfolio income, capital gains
+            const otherIncomeForSSA = wages + taxableInterest + taxableDividends + 
+                                      iraDistributions + pension + rothConversions + 
+                                      annuitySurrenders + portfolioIncome + capitalGains;
+            
+            // Calculate SSA taxability
+            const ssaCalc = calculateSSATaxability(ssBenefits, otherIncomeForSSA, taxFreeInterest, filingStatus);
+            
+            // Update SSA worksheet display
+            ssaDisplay.half.textContent = formatCurrency(ssaCalc.halfSS);
+            ssaDisplay.otherIncome.textContent = formatCurrency(ssaCalc.otherIncome);
+            ssaDisplay.provisional.textContent = formatCurrency(ssaCalc.combinedIncome);
+            ssaDisplay.baseAmount.textContent = formatCurrency(ssaCalc.baseAmount);
+            ssaDisplay.overBase.textContent = formatCurrency(ssaCalc.excess);
+            ssaDisplay.taxable.textContent = formatCurrency(ssaCalc.taxableSS);
+            
+            // Calculate Gross Income
+            // Includes: taxable portion of SSA, wages, interest, dividends, IRA, pension, roth conversions, annuity, portfolio income
+            const grossIncome = ssaCalc.taxableSS + wages + taxableInterest + taxableDividends + 
+                               iraDistributions + pension + rothConversions + annuitySurrenders + portfolioIncome;
+            
+            // Calculate Standard Deduction
+            const standardDeduction = calculateStandardDeduction(filingStatus, age65, blind);
+            
+            // Calculate Taxable Income
+            const taxableIncome = Math.max(0, grossIncome - standardDeduction);
+            
+            // Calculate Tax
+            const taxResult = calculateTax(taxableIncome, filingStatus);
+            
+            // Calculate Effective Rate
+            const effectiveRate = grossIncome > 0 ? (taxResult.tax / grossIncome) * 100 : 0;
+            
+            // Update results
+            results.grossIncome.textContent = formatCurrency(grossIncome);
+            results.standardDeduction.textContent = formatCurrency(standardDeduction);
+            results.taxableIncome.textContent = formatCurrency(taxableIncome);
+            results.taxLiability.textContent = formatCurrency(taxResult.tax);
+            results.effectiveRate.textContent = effectiveRate.toFixed(1) + '%';
+            results.marginalRate.textContent = (taxResult.marginalRate * 100).toFixed(0) + '%';
+            results.totalTaxableSSA.textContent = formatCurrency(ssaCalc.taxableSS);
+            results.displayPortfolioIncome.textContent = formatCurrency(portfolioIncome);
+        }
+        
+        // Add event listeners
+        Object.values(inputs).forEach(input => {
+            if (input && input.tagName) {
+                input.addEventListener('input', calculate);
+                input.addEventListener('change', calculate);
+            }
+        });
+        
+        // Initial calculation
+        calculate();
     </script>
 </body>
 </html>
