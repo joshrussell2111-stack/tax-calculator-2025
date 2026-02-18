@@ -3,17 +3,324 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <title>My Site</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>2025 Tax Calculator | Virtus Wealth Advisors</title>
+    <style>
+        :root {
+            --virtus-navy: #1a2744;
+            --virtus-gold: #c9a962;
+            --text-dark: #1a1a1a;
+            --bg-light: #f5f5f5;
+            --border: #ddd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--virtus-gold);
+        }
+        
+        h1 {
+            color: var(--virtus-navy);
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .calculator-section {
+            margin: 30px 0;
+        }
+        
+        .input-group {
+            margin: 20px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--virtus-navy);
+        }
+        
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--virtus-gold);
+        }
+        
+        button {
+            background: var(--virtus-navy);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: var(--virtus-gold);
+        }
+        
+        .results {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid var(--virtus-gold);
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--virtus-navy);
+        }
+        
+        .bracket-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .footer strong {
+            color: var(--virtus-navy);
+        }
+    </style>
 </head>
 <body>
-    <main>
-        <section class="hero">
-            <h1>Welcome</h1>
-            <p>This is a starter template</p>
-        </section>
-    </main>
-    <script src="script.js"></script>
+    <div class="container">
+        <header>
+            <h1>2025 Federal Tax Calculator</h1>
+            <p class="subtitle">Estimate your 2025 federal income tax liability</p>
+        </header>
+        
+        <div class="calculator-section">
+            <div class="input-group">
+                <label for="income">Annual Gross Income ($)</label>
+                <input type="number" id="income" placeholder="Enter your income" min="0" step="100">
+            </div>
+            
+            <div class="input-group">
+                <label for="filingStatus">Filing Status</label>
+                <select id="filingStatus">
+                    <option value="single">Single</option>
+                    <option value="married_joint">Married Filing Jointly</option>
+                    <option value="married_separate">Married Filing Separately</option>
+                    <option value="head_household">Head of Household</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="deductions">Itemized Deductions ($) - Leave blank for standard deduction</label>
+                <input type="number" id="deductions" placeholder="Standard deduction will apply" min="0" step="100">
+            </div>
+            
+            <button onclick="calculateTax()">Calculate Tax</button>
+        </div>
+        
+        <div id="results" class="results">
+            <h2>Tax Calculation Results</h2>
+            <div class="result-item">
+                <span>Gross Income:</span>
+                <span id="grossIncome">$0</span>
+            </div>
+            <div class="result-item">
+                <span>Standard Deduction:</span>
+                <span id="standardDeduction">$0</span>
+            </div>
+            <div class="result-item">
+                <span>Itemized Deductions:</span>
+                <span id="itemizedDeductions">$0</span>
+            </div>
+            <div class="result-item">
+                <span>Taxable Income:</span>
+                <span id="taxableIncome">$0</span>
+            </div>
+            <div class="result-item">
+                <span>Effective Tax Rate:</span>
+                <span id="effectiveRate">0%</span>
+            </div>
+            <div class="result-item">
+                <span>Estimated Federal Tax:</span>
+                <span id="totalTax">$0</span>
+            </div>
+            
+            <div class="bracket-info" id="bracketInfo"></div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Virtus Wealth Advisors</strong> | Powered by Ameriprise Financial</p>
+            <p style="margin-top: 10px; font-size: 0.8em;">This calculator provides estimates based on 2025 federal tax brackets. Consult a tax professional for advice specific to your situation.</p>
+        </div>
+    </div>
+    
+    <script>
+        // 2025 Tax Brackets
+        const TAX_BRACKETS_2025 = {
+            single: [
+                { rate: 0.10, min: 0, max: 11924.99 },
+                { rate: 0.12, min: 11925, max: 48474.99 },
+                { rate: 0.22, min: 48475, max: 103349.99 },
+                { rate: 0.24, min: 103350, max: 197299.99 },
+                { rate: 0.32, min: 197300, max: 250524.99 },
+                { rate: 0.35, min: 250525, max: 626349.99 },
+                { rate: 0.37, min: 626350, max: Infinity }
+            ],
+            married_joint: [
+                { rate: 0.10, min: 0, max: 23849.99 },
+                { rate: 0.12, min: 23850, max: 96949.99 },
+                { rate: 0.22, min: 96950, max: 206699.99 },
+                { rate: 0.24, min: 206700, max: 394599.99 },
+                { rate: 0.32, min: 394600, max: 501049.99 },
+                { rate: 0.35, min: 501050, max: 751599.99 },
+                { rate: 0.37, min: 751600, max: Infinity }
+            ],
+            married_separate: [
+                { rate: 0.10, min: 0, max: 11924.99 },
+                { rate: 0.12, min: 11925, max: 48474.99 },
+                { rate: 0.22, min: 48475, max: 103349.99 },
+                { rate: 0.24, min: 103350, max: 197299.99 },
+                { rate: 0.32, min: 197300, max: 250524.99 },
+                { rate: 0.35, min: 250525, max: 375799.99 },
+                { rate: 0.37, min: 375800, max: Infinity }
+            ],
+            head_household: [
+                { rate: 0.10, min: 0, max: 17099.99 },
+                { rate: 0.12, min: 17100, max: 65549.99 },
+                { rate: 0.22, min: 65550, max: 100499.99 },
+                { rate: 0.24, min: 100500, max: 191949.99 },
+                { rate: 0.32, min: 191950, max: 243724.99 },
+                { rate: 0.35, min: 243725, max: 609349.99 },
+                { rate: 0.37, min: 609350, max: Infinity }
+            ]
+        };
+
+        // 2025 Standard Deductions
+        const STANDARD_DEDUCTIONS_2025 = {
+            single: 15000,
+            married_joint: 30000,
+            married_separate: 15000,
+            head_household: 22500
+        };
+
+        function calculateTax() {
+            const income = parseFloat(document.getElementById('income').value) || 0;
+            const filingStatus = document.getElementById('filingStatus').value;
+            const itemizedDeductions = parseFloat(document.getElementById('deductions').value) || 0;
+            
+            if (income <= 0) {
+                alert('Please enter a valid income amount');
+                return;
+            }
+            
+            const standardDeduction = STANDARD_DEDUCTIONS_2025[filingStatus];
+            const totalDeductions = Math.max(standardDeduction, itemizedDeductions);
+            const taxableIncome = Math.max(0, income - totalDeductions);
+            
+            // Calculate tax
+            let totalTax = 0;
+            let remainingIncome = taxableIncome;
+            let highestBracket = '';
+            
+            const brackets = TAX_BRACKETS_2025[filingStatus];
+            
+            for (const bracket of brackets) {
+                if (remainingIncome <= 0) break;
+                
+                const taxableAtThisBracket = Math.min(remainingIncome, bracket.max - bracket.min + (bracket.max === Infinity ? 0 : 0.01));
+                const taxAtThisBracket = taxableAtThisBracket * bracket.rate;
+                totalTax += taxAtThisBracket;
+                remainingIncome -= taxableAtThisBracket;
+                
+                if (taxableAtThisBracket > 0) {
+                    highestBracket = `${(bracket.rate * 100).toFixed(0)}%`;
+                }
+            }
+            
+            const effectiveRate = income > 0 ? (totalTax / income * 100).toFixed(2) : 0;
+            
+            // Display results
+            document.getElementById('grossIncome').textContent = formatCurrency(income);
+            document.getElementById('standardDeduction').textContent = formatCurrency(standardDeduction);
+            document.getElementById('itemizedDeductions').textContent = formatCurrency(itemizedDeductions);
+            document.getElementById('taxableIncome').textContent = formatCurrency(taxableIncome);
+            document.getElementById('effectiveRate').textContent = effectiveRate + '%';
+            document.getElementById('totalTax').textContent = formatCurrency(totalTax);
+            
+            document.getElementById('bracketInfo').innerHTML = `
+                <strong>Highest Tax Bracket:</strong> ${highestBracket}<br>
+                <strong>Taxable Income After Deductions:</strong> ${formatCurrency(taxableIncome)}<br>
+                <strong>Based on 2025 Federal Tax Brackets</strong>
+            `;
+            
+            document.getElementById('results').classList.add('show');
+        }
+        
+        function formatCurrency(amount) {
+            return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
 </body>
 </html>
